@@ -23,6 +23,7 @@ var app = builder.Build();
 // migrera databasen automatiskt (Azure)
 using (var scope = app.Services.CreateScope())
 {
+    var services = scope.ServiceProvider;
     var db = scope.ServiceProvider.GetRequiredService<LoanDbContext>();
     db.Database.Migrate();
 }

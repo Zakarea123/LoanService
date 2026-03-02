@@ -123,5 +123,37 @@ public class LoansController :  ControllerBase
 
         return CreatedAtAction(nameof(GetLoanById), new { id = loan.Id }, response);
     }
+    
+    
+    
+    // UPDATE: lämna tillbaka (ändra status på lånet)
+    [HttpPut("{id:int}/return")]
+    public async Task<IActionResult> ReturnLoan(int id)
+    {
+        var loan = await _db.Loans.FindAsync(id);
+        if (loan is null) return NotFound();
+        if (loan.IsReturned) return BadRequest("Lånet är redan återlämnat.");
+
+        loan.IsReturned = true;
+        loan.ReturnDate = DateTime.UtcNow;
+
+        await _db.SaveChangesAsync();
+        return NoContent();
+    }
+    
+    
+    
+    // DELETE: radera lån 
+    [HttpDelete("{id:int}")]
+    public async Task<IActionResult> DeleteLoan(int id)
+    {
+        var loan = await _db.Loans.FindAsync(id);
+        if (loan is null) return NotFound();
+
+        _db.Loans.Remove(loan);
+        await _db.SaveChangesAsync();
+
+        return NoContent();
+    }
 
 }

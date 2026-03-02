@@ -14,6 +14,7 @@ public class LoansController :  ControllerBase
     public LoansController(LoanDbContext db) => _db = db;
     
     
+    
      // READ: aktiva lån för en specifik borower
     [HttpGet("borrower/{borrowerId:int}")]
     public async Task<ActionResult<List<LoanResponse>>> GetActiveLoansForBorrower(int borrowerId)
@@ -40,7 +41,6 @@ public class LoansController :  ControllerBase
     
     
     
-    
     // READ: hämta lån via id
     [HttpGet("{id:int}")]
     public async Task<ActionResult<LoanResponse>> GetLoanById(int id)
@@ -59,6 +59,7 @@ public class LoansController :  ControllerBase
             IsReturned = loan.IsReturned
         });
     }
+    
     
     
     // READ: Hämtar historiken för alla gamla utlåningar hos inloggade användaren
@@ -85,5 +86,43 @@ public class LoansController :  ControllerBase
         return Ok(loans);
     }
     
+    
+    
+    // CREATE: låna bok (skapa nytt lån)
+    [HttpPost]
+    public async Task<ActionResult<LoanResponse>> CreateLoan(CreateLoanRequest request)
+    {
+        if (request.BookId <= 0) return BadRequest("BookId måste vara > 0.");
+        if (request.BorrowerId <= 0) return BadRequest("BorrowerId måste vara större än 0.");
+
+        // stoppa dubbelutlåning av samma BookId
+        var alreadyLoaned = await _db.Loans.AnyAsync(l => l.BookId == request.BookId && !l.IsReturned);
+        if (alreadyLoaned) return Conflict("Boken är redan utlånad.");
+
+        var loan = new Loan
+        {
+            BookId = request.BookId,
+            BorrowerId = request.BorrowerId,
+            LoanDate = DateTime.UtcNow,
+            DueDate = request.DueDate.ToUniversalTime(),
+            IsReturned = false
+        };
+        
+        _db.Loans.Add(loan);
+        await _db.SaveChangesAsync();
+        
+        var response = new LoanResponse
+        {
+            Id = loan.Id,
+            BookId = loan.BookId,
+            BorrowerId = loan.BorrowerId,
+            LoanDate = loan.LoanDate,
+            DueDate = loan.DueDate,
+            ReturnDate = loan.ReturnDate,
+            IsReturned = loan.IsReturned
+        };
+
+        return CreatedAtAction(nameof(GetLoanById), new { id = loan.Id }, response);
+    }
     
 }

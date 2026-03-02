@@ -416,3 +416,15 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
+
+#Rider
+.idea/
+*.sln.iml
+
+# Entity Framework / local dev
+**/Migrations/*.lock
+
+# SQLite databases
+*.db
+*.db-shm
+*.db-wal

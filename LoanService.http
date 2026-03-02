@@ -1,0 +1,27 @@
+@LoanService_HostAddress = http://localhost:5175
+
+### Hämta aktiva lån
+GET {{LoanService_HostAddress}}/api/loans
+Accept: application/json
+
+###
+
+### Skapa nytt lån
+POST {{LoanService_HostAddress}}/api/loans
+Content-Type: application/json
+
+{
+  "bookId": 1,
+  "borrowerId": 123,
+  "dueDate": "2026-03-15T00:00:00Z"
+}
+
+###
+
+### Lämna tillbaka lån
+PUT {{LoanService_HostAddress}}/api/loans/1/return
+
+###
+
+### Radera lån
+DELETE {{LoanService_HostAddress}}/api/loans/1

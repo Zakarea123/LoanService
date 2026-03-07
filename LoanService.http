@@ -11,7 +11,7 @@ POST {{LoanService_HostAddress}}/api/loans
 Content-Type: application/json
 
 {
-  "bookId": 1,
+  "itemId": 1,
   "borrowerId": 123,
   "dueDate": "2026-03-15T00:00:00Z"
 }

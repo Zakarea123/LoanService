@@ -26,7 +26,7 @@ public class LoansController :  ControllerBase
             .Select(l => new LoanResponse
             {
                 Id = l.Id,
-                BookId = l.BookId,
+                ItemId = l.ItemId,
                 BorrowerId = l.BorrowerId,
                 LoanDate = l.LoanDate,
                 DueDate = l.DueDate,
@@ -50,7 +50,7 @@ public class LoansController :  ControllerBase
         return Ok(new LoanResponse
         {
             Id = loan.Id,
-            BookId = loan.BookId,
+            ItemId = loan.ItemId,
             BorrowerId = loan.BorrowerId,
             LoanDate = loan.LoanDate,
             DueDate = loan.DueDate,
@@ -73,7 +73,7 @@ public class LoansController :  ControllerBase
             .Select(l => new LoanResponse
             {
                 Id = l.Id,
-                BookId = l.BookId,
+                ItemId = l.ItemId,
                 BorrowerId = l.BorrowerId,
                 LoanDate = l.LoanDate,
                 DueDate = l.DueDate,
@@ -91,16 +91,16 @@ public class LoansController :  ControllerBase
     [HttpPost]
     public async Task<ActionResult<LoanResponse>> CreateLoan(CreateLoanRequest request)
     {
-        if (request.BookId <= 0) return BadRequest("BookId måste vara > 0.");
+        if (request.ItemId <= 0) return BadRequest("ItemId måste vara > 0.");
         if (request.BorrowerId <= 0) return BadRequest("BorrowerId måste vara större än 0.");
 
-        // stoppa dubbelutlåning av samma BookId
-        var alreadyLoaned = await _db.Loans.AnyAsync(l => l.BookId == request.BookId && !l.IsReturned);
+        // stoppa dubbelutlåning av samma ItemId
+        var alreadyLoaned = await _db.Loans.AnyAsync(l => l.ItemId == request.ItemId && !l.IsReturned);
         if (alreadyLoaned) return Conflict("Boken är redan utlånad.");
 
         var loan = new Loan
         {
-            BookId = request.BookId,
+            ItemId = request.ItemId,
             BorrowerId = request.BorrowerId,
             LoanDate = DateTime.UtcNow,
             DueDate = request.DueDate.ToUniversalTime(),
@@ -113,7 +113,7 @@ public class LoansController :  ControllerBase
         var response = new LoanResponse
         {
             Id = loan.Id,
-            BookId = loan.BookId,
+            ItemId = loan.ItemId,
             BorrowerId = loan.BorrowerId,
             LoanDate = loan.LoanDate,
             DueDate = loan.DueDate,

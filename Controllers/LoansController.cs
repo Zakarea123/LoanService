@@ -14,7 +14,7 @@ public class LoansController :  ControllerBase
     public LoansController(LoanDbContext db) => _db = db;
     
     
-    // READ: aktiva lån för en specifik borrower
+    // READ: Get active loans for a specified borrower
     [HttpGet("borrower/{borrowerId:int}")]
     public async Task<ActionResult<List<LoanResponse>>> GetActiveLoansForBorrower(int borrowerId)
     {
@@ -40,7 +40,7 @@ public class LoansController :  ControllerBase
     
     
     
-    // READ: hämta lån via id
+    // READ: Get loan by ID
     [HttpGet("{id:int}")]
     public async Task<ActionResult<LoanResponse>> GetLoanById(int id)
     {
@@ -61,7 +61,7 @@ public class LoansController :  ControllerBase
     
     
     
-    // READ: Hämtar historiken för alla gamla utlåningar hos inloggade användaren
+    // READ: Retrieves the history of all previous loans for the user
     [HttpGet("borrower/{borrowerId:int}/history")]
     public async Task<ActionResult<List<LoanResponse>>> GetLoanHistoryForBorrower(int borrowerId)
     {
@@ -84,10 +84,32 @@ public class LoansController :  ControllerBase
 
         return Ok(loans);
     }
+    
+    // READ: Get all active loans (used by frontend for availability check and NotificationService for reminders)
+    [HttpGet("active")]
+    public async Task<ActionResult<List<LoanResponse>>> GetActiveLoans()
+    {
+        var loans = await _db.Loans
+            .Where(l => !l.IsReturned)
+            .OrderBy(l => l.DueDate)
+            .Select(l => new LoanResponse
+            {
+                Id = l.Id,
+                ItemId = l.ItemId,
+                BorrowerId = l.BorrowerId,
+                LoanDate = l.LoanDate,
+                DueDate = l.DueDate,
+                ReturnDate = l.ReturnDate,
+                IsReturned = l.IsReturned
+            })
+            .ToListAsync();
+
+        return Ok(loans);
+    }
 
     
     
-    // CREATE: låna bok (skapa nytt lån)
+    // CREATE: Borrow a book (Create a new loan)
     [HttpPost]
     public async Task<ActionResult<LoanResponse>> CreateLoan(CreateLoanRequest request)
     {
@@ -126,7 +148,7 @@ public class LoansController :  ControllerBase
     
     
     
-    // UPDATE: lämna tillbaka (ändra status på lånet)
+    // UPDATE: Return a book (Change the loan status)
     [HttpPut("{id:int}/return")]
     public async Task<IActionResult> ReturnLoan(int id)
     {
@@ -143,7 +165,7 @@ public class LoansController :  ControllerBase
     
     
     
-    // DELETE: radera lån 
+    // DELETE: Delete a Loan (Remove from database table)
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> DeleteLoan(int id)
     {
